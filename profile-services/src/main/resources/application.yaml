@@ -5,6 +5,13 @@ server:
 spring:
   application:
     name: profile-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/lamnd
+
   data:
     mongodb:
       uri: mongodb://root:root@localhost:27017/profile-service?authSource=admin
