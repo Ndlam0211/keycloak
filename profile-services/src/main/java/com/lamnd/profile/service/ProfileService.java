@@ -12,10 +12,12 @@ import com.lamnd.profile.dto.identity.TokenExchangeResponse;
 import com.lamnd.profile.dto.identity.UserCreationParam;
 import com.lamnd.profile.dto.request.RegistrationRequest;
 import com.lamnd.profile.dto.response.ProfileResponse;
+import com.lamnd.profile.exception.ErrorNormalizer;
 import com.lamnd.profile.feign.IdentityClient;
 import com.lamnd.profile.mapper.ProfileMapper;
 import com.lamnd.profile.repository.ProfileRepository;
 
+import feign.FeignException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,6 +32,7 @@ public class ProfileService {
     ProfileRepository profileRepository;
     ProfileMapper profileMapper;
     IdentityClient identityClient;
+    ErrorNormalizer errorNormalizer;
 
     @Value("${idp.client-id}")
     @NonFinal
@@ -45,41 +48,45 @@ public class ProfileService {
     }
 
     public ProfileResponse register(RegistrationRequest request) {
-        // exchange client token of keycloak
-        TokenExchangeResponse tokenExchangeResponse = identityClient.exchangeToken(TokenExchangeParam.builder()
-                .client_id(idpClientId)
-                .client_secret(idpClientSecret)
-                .grant_type("client_credentials")
-                .scope("openid")
-                .build());
+        try {
+            // exchange client token of keycloak
+            TokenExchangeResponse tokenExchangeResponse = identityClient.exchangeToken(TokenExchangeParam.builder()
+                    .client_id(idpClientId)
+                    .client_secret(idpClientSecret)
+                    .grant_type("client_credentials")
+                    .scope("openid")
+                    .build());
 
-        log.info("Token exchange response: {}", tokenExchangeResponse);
+            log.info("Token exchange response: {}", tokenExchangeResponse);
 
-        // create user in keycloak with the token and given info
-        var response = identityClient.createUser(
-                "Bearer " + tokenExchangeResponse.getAccessToken(),
-                UserCreationParam.builder()
-                        .username(request.getUsername())
-                        .email(request.getEmail())
-                        .firstName(request.getFirstName())
-                        .lastName(request.getLastName())
-                        .enabled(true)
-                        .emailVerified(false)
-                        .credentials(List.of(Credential.builder()
-                                .type("password")
-                                .value(request.getPassword())
-                                .temporary(false)
-                                .build()))
-                        .build());
+            // create user in keycloak with the token and given info
+            var response = identityClient.createUser(
+                    "Bearer " + tokenExchangeResponse.getAccessToken(),
+                    UserCreationParam.builder()
+                            .username(request.getUsername())
+                            .email(request.getEmail())
+                            .firstName(request.getFirstName())
+                            .lastName(request.getLastName())
+                            .enabled(true)
+                            .emailVerified(false)
+                            .credentials(List.of(Credential.builder()
+                                    .type("password")
+                                    .value(request.getPassword())
+                                    .temporary(false)
+                                    .build()))
+                            .build());
 
-        // get userid of the account in keycloak just created
-        String userId = extractUserIdFromResponse(response);
+            // get userid of the account in keycloak just created
+            String userId = extractUserIdFromResponse(response);
 
-        var profile = profileMapper.toProfile(request);
-        profile.setUserId(userId); // map an account in keycloak to a profile in database
-        profile = profileRepository.save(profile);
+            var profile = profileMapper.toProfile(request);
+            profile.setUserId(userId); // map an account in keycloak to a profile in database
+            profile = profileRepository.save(profile);
 
-        return profileMapper.toProfileResponse(profile);
+            return profileMapper.toProfileResponse(profile);
+        } catch (FeignException exception) {
+            throw errorNormalizer.handleKeyCloakException(exception);
+        }
     }
 
     private String extractUserIdFromResponse(ResponseEntity<?> response) {
