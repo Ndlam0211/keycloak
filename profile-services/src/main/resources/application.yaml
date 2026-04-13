@@ -8,3 +8,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://root:root@localhost:27017/profile-service?authSource=admin
+
+idp:
+  url: http://localhost:8180
+  client-id: lamnd_app
+  client-secret: JVQqedIUbd1hfeexiA7t3wocvM46ByNQ
