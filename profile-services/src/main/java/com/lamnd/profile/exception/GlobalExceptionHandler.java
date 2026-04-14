@@ -1,5 +1,6 @@
 package com.lamnd.profile.exception;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -42,16 +43,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 
-    //    @ExceptionHandler(value = AccessDeniedException.class)
-    //    ResponseEntity<ApiResponse> handlingAccessDeniedException(AccessDeniedException exception) {
-    //        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
-    //
-    //        return ResponseEntity.status(errorCode.getStatusCode())
-    //                .body(ApiResponse.builder()
-    //                        .code(errorCode.getCode())
-    //                        .message(errorCode.getMessage())
-    //                        .build());
-    //    }
+        @ExceptionHandler(value = AccessDeniedException.class)
+        ResponseEntity<ApiResponse<?>> handlingAccessDeniedException(AccessDeniedException exception) {
+            ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+
+            return ResponseEntity.status(errorCode.getStatusCode())
+                    .body(ApiResponse.builder()
+                            .code(errorCode.getCode())
+                            .message(errorCode.getMessage())
+                            .build());
+        }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException exception) {
