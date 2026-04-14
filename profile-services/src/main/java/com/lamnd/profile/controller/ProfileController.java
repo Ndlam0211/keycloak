@@ -4,10 +4,7 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.lamnd.profile.dto.ApiResponse;
 import com.lamnd.profile.dto.request.RegistrationRequest;
@@ -37,6 +34,13 @@ public class ProfileController {
     ApiResponse<List<ProfileResponse>> getAllProfiles() {
         return ApiResponse.<List<ProfileResponse>>builder()
                 .result(profileService.getAllProfiles())
+                .build();
+    }
+
+    @GetMapping("/my-profile")
+    ApiResponse<ProfileResponse> getMyProfile() {
+        return ApiResponse.<ProfileResponse>builder()
+                .result(profileService.getMyProfile())
                 .build();
     }
 }
