@@ -1,14 +1,14 @@
 package com.lamnd.profile.configuration;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 public class CustomAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
     private final String REALM_ACCESS = "realm_access";
@@ -21,9 +21,10 @@ public class CustomAuthoritiesConverter implements Converter<Jwt, Collection<Gra
         Object roles = realmAccessMap.get("roles");
 
         if (roles instanceof List stringRoles) {
-            return ((List<String>) stringRoles).stream()
-                    .map(role -> new SimpleGrantedAuthority(String.format("%s%s",ROLE_PREFIX,role)))
-                    .collect(Collectors.toList());
+            return ((List<String>) stringRoles)
+                    .stream()
+                            .map(role -> new SimpleGrantedAuthority(String.format("%s%s", ROLE_PREFIX, role)))
+                            .collect(Collectors.toList());
         }
 
         return List.of();

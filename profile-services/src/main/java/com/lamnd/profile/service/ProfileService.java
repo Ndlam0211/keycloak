@@ -2,8 +2,6 @@ package com.lamnd.profile.service;
 
 import java.util.List;
 
-import com.lamnd.profile.exception.AppException;
-import com.lamnd.profile.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +14,8 @@ import com.lamnd.profile.dto.identity.TokenExchangeResponse;
 import com.lamnd.profile.dto.identity.UserCreationParam;
 import com.lamnd.profile.dto.request.RegistrationRequest;
 import com.lamnd.profile.dto.response.ProfileResponse;
+import com.lamnd.profile.exception.AppException;
+import com.lamnd.profile.exception.ErrorCode;
 import com.lamnd.profile.exception.ErrorNormalizer;
 import com.lamnd.profile.feign.IdentityClient;
 import com.lamnd.profile.mapper.ProfileMapper;
@@ -56,9 +56,8 @@ public class ProfileService {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName(); // get subject from jwt token, subject is userid in keycloak
 
-        var profile = profileRepository.findByUserId(userId).orElseThrow(
-                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
-        );
+        var profile =
+                profileRepository.findByUserId(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return profileMapper.toProfileResponse(profile);
     }
